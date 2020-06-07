@@ -31,6 +31,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -40,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //TODO:When Assign New Dustbin is clicked a list of workers should pop up
     Button showbtn, assignbtn;
     DatabaseReference myRef;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +73,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
-
         mMap = googleMap;
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
-            public void onMapClick(LatLng latLng) {
+            public void onMapClick(final LatLng latLng) {
                 //Creating Marker
                 MarkerOptions markerOptions = new MarkerOptions();
                 //Set Marker Position
@@ -91,81 +93,70 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .strokeColor(Color.RED)
                         .fillColor(Color.argb(50, 0, 0, 255)));
                 flag = 1;
+                assignbtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
 
+                        callFunction();
+                    }
+                });
             }
         });
 
-        assignbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                myRef = database.getReference("Users");
-                myRef.addValueEventListener(new ValueEventListener() {
+    }
+    void callFunction()
+    {
+        final ArrayList<String> items = new ArrayList<>();
+        //final String[] items = new String[(int) count];
+        if (flag == 1) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            myRef = database.getReference("Users");
+            myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                            count = snapshot.getChildrenCount();
-                        }
+                    int i = 0;
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                        Users users = snapshot.getValue(Users.class);
+                        String name = users.getName();
+                        //items[i++] = name;
+                        items.add(name);
+                        //Toast.makeText(MapsActivity.this, items[0] + " " + items[1], Toast.LENGTH_SHORT).show();
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    }
-
-
-                });
-                final String[] items = new String[(int) count];
-                if (flag == 1) {
-                    //FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    //myRef = database.getReference("Users");
-
-                    myRef.addValueEventListener(new ValueEventListener() {
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(MapsActivity.this, R.layout.list_item, R.id.txtItem, items);
+                    listView.setAdapter(adapter);
+                    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                            int i = 0;
-                            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                Users users = snapshot.getValue(Users.class);
-                                String name = users.getName();
-                                items[i++] = name;
-                                Toast.makeText(MapsActivity.this, items[0] + " " + items[1], Toast.LENGTH_SHORT).show();
-                            }
-                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(MapsActivity.this, R.layout.list_item, R.id.txtItem, items);
-                            listView.setAdapter(adapter);
-                            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                @Override
-                                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                    ViewGroup viewGroup = (ViewGroup) view;
-                                    TextView txt = viewGroup.findViewById(R.id.txtItem);
-                                    Toast.makeText(MapsActivity.this, txt.getText().toString(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
-                            builder.setCancelable(true);
-                            builder.setPositiveButton("OK", null);
-                            builder.setView(listView);
-                            AlertDialog alertDialog = builder.create();
-                            alertDialog.show();
-                        }
-
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            ViewGroup viewGroup = (ViewGroup) view;
+                            TextView txt = viewGroup.findViewById(R.id.txtItem);
+                            Toast.makeText(MapsActivity.this, txt.getText().toString(), Toast.LENGTH_SHORT).show();
                         }
                     });
-                    listView = new ListView(MapsActivity.this);
-                    //String[] items={"Facebook","Google+","Twitter","Instagram"};
-                    Toast.makeText(MapsActivity.this, items[0] + "-" + items[1], Toast.LENGTH_SHORT).show();
-                    //count = 0;
-                    flag = 0;
-                } else {
-                    //Toast.makeText(MapsActivity.this, "Select from map first", Toast.LENGTH_SHORT).show();
-                    Snackbar.make(getWindow().getDecorView().getRootView(), "Select a location to assign", Snackbar.LENGTH_LONG).show();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);
+                    builder.setCancelable(true);
+                    builder.setPositiveButton("OK", null);
+                    builder.setView(listView);
+                    AlertDialog alertDialog = builder.create();
+                    alertDialog.show();
+                    Toast.makeText(MapsActivity.this, "Button Pressed2", Toast.LENGTH_SHORT).show();
                 }
-            }
-        });
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+            listView = new ListView(MapsActivity.this);
+            //String[] items={"Facebook","Google+","Twitter","Instagram"};
+            //Toast.makeText(MapsActivity.this, items[0] + "-" + items[1], Toast.LENGTH_SHORT).show();
+            //count = 0;
+            Toast.makeText(MapsActivity.this, "Button Pressed", Toast.LENGTH_SHORT).show();
+            flag = 0;
+        } else {
+            //Toast.makeText(MapsActivity.this, "Select from map first", Toast.LENGTH_SHORT).show();
+            Snackbar.make(getWindow().getDecorView().getRootView(), "Select a location to assign", Snackbar.LENGTH_LONG).show();
+        }
     }
 }

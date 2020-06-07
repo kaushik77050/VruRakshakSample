@@ -71,6 +71,8 @@ public class RegisterWorker extends AppCompatActivity {
         password = pass.getText().toString();
         confirmPassword = cnfrmPass.getText().toString();
 
+        //double ph = Double.parseDouble(phone);
+
         if(TextUtils.isEmpty(firstname))
             Toast.makeText(this, "Enter the first name", Toast.LENGTH_SHORT).show();
         else if(TextUtils.isEmpty(lastname))
@@ -97,7 +99,7 @@ public class RegisterWorker extends AppCompatActivity {
             validatePhoneNumber(Name,email,phone,password);
         }
     }
-    void validatePhoneNumber(final String Name, final String email, final String phoneNumber, final String password)
+    void validatePhoneNumber(final String Name, final String email, final String  phoneNumber, final String password)
     {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         myRef = database.getReference();

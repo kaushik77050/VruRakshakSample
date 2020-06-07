@@ -24,6 +24,8 @@ import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -57,6 +60,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         showbtn = findViewById(R.id.showDustbins);
         assignbtn = findViewById(R.id.assigDustbin);
 
+        showbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Work on Showing dustbins
+            }
+        });
 
     }
 
@@ -97,7 +106,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     @Override
                     public void onClick(View v) {
 
-                        callFunction();
+                        callFunction(latLng);
                     }
                 });
             }
@@ -105,13 +114,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
-    void callFunction()
+    void callFunction(final LatLng latLng)
     {
         final ArrayList<String> items = new ArrayList<>();
         //final String[] items = new String[(int) count];
         if (flag == 1) {
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            final FirebaseDatabase database = FirebaseDatabase.getInstance();
             myRef = database.getReference("Users");
+            //Retrieve data from firebase
             myRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -119,11 +129,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     int i = 0;
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         Users users = snapshot.getValue(Users.class);
-                        String name = users.getName();
+                        String name = users.getPhone();
                         //items[i++] = name;
                         items.add(name);
                         //Toast.makeText(MapsActivity.this, items[0] + " " + items[1], Toast.LENGTH_SHORT).show();
                     }
+                    //ading the data to list
                     ArrayAdapter<String> adapter = new ArrayAdapter<String>(MapsActivity.this, R.layout.list_item, R.id.txtItem, items);
                     listView.setAdapter(adapter);
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -131,7 +142,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                             ViewGroup viewGroup = (ViewGroup) view;
                             TextView txt = viewGroup.findViewById(R.id.txtItem);
-                            Toast.makeText(MapsActivity.this, txt.getText().toString(), Toast.LENGTH_SHORT).show();
+                            final String ph = txt.getText().toString();
+                            Double lt = latLng.latitude;
+                            Double ln = latLng.longitude;
+
+                            int lt_int = lt.intValue();
+                            int ln_int = ln.intValue();
+
+                            //final String child = String.format("%.2f", latLng.latitude) + "_" +String.format("%.2f", latLng.longitude);
+                            final String child = String.valueOf(lt_int) + "_" + String.valueOf(ln_int);
+                            myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    HashMap<String, Object> hashMap = new HashMap<>();
+                                    hashMap.put("latitude",latLng.latitude);
+                                    hashMap.put("longitude",latLng.longitude);
+
+                                    myRef.child(ph).child(child).updateChildren(hashMap)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    Toast.makeText(MapsActivity.this, "Location Added", Toast.LENGTH_SHORT).show();
+                                                    myRef = database.getReference("Users").child(ph);
+                                                    Toast.makeText(MapsActivity.this, "Token:"+myRef.getKey(), Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                }
+                            });
+                            Toast.makeText(MapsActivity.this, child, Toast.LENGTH_SHORT).show();
                         }
                     });
                     AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivity.this);

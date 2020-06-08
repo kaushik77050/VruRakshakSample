@@ -63,7 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         showbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO: Work on Showing dustbins
+                showDustbins();
             }
         });
 
@@ -143,14 +143,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             ViewGroup viewGroup = (ViewGroup) view;
                             TextView txt = viewGroup.findViewById(R.id.txtItem);
                             final String ph = txt.getText().toString();
-                            Double lt = latLng.latitude;
-                            Double ln = latLng.longitude;
-
-                            int lt_int = lt.intValue();
-                            int ln_int = ln.intValue();
+//                            Double lt = latLng.latitude;
+//                            Double ln = latLng.longitude;
+//
+//                            int lt_int = lt.intValue();
+//                            int ln_int = ln.intValue();
 
                             //final String child = String.format("%.2f", latLng.latitude) + "_" +String.format("%.2f", latLng.longitude);
-                            final String child = String.valueOf(lt_int) + "_" + String.valueOf(ln_int);
+                            //final String child = String.valueOf(lt_int) + "_" + String.valueOf(ln_int);
+                            final String child = myRef.push().getKey();
                             myRef.addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -201,5 +202,68 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //Toast.makeText(MapsActivity.this, "Select from map first", Toast.LENGTH_SHORT).show();
             Snackbar.make(getWindow().getDecorView().getRootView(), "Select a location to assign", Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    void showDustbins()
+    {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("Users");
+        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    Users users1 = snapshot.getValue(Users.class);
+                    String phoneN = users1.getPhone();
+                    //Toast.makeText(MapsActivity.this, "Child of phone:"+snapshot.getClass().getName(), Toast.LENGTH_LONG).show();
+//                    if(snapshot.getChildren() != null){
+                        for(DataSnapshot snapshot1 : snapshot.getChildren()){
+
+                            //LatLng ltln = new LatLng(latitude,longitude);
+                            for(DataSnapshot snapshot2 : snapshot1.getChildren()){
+
+                                    Locations location = snapshot2.getValue(Locations.class);
+                                    Double lat = location.getLatitude();
+                                    Double lon = location.getLongitude();
+
+                                    LatLng ltln = new LatLng(lat,lon);
+                                    //LatLng ltln = locations1.getLl();
+                                    //Toast.makeText(MapsActivity.this, "Location"+ltln.longitude, Toast.LENGTH_SHORT).show();
+                                    //Creating Marker
+                                    MarkerOptions markerOptions = new MarkerOptions();
+                                    //Set Marker Position
+                                    markerOptions.position(ltln);
+                                    //Set Latitude And Longitude On Marker
+                                    markerOptions.title(ltln.latitude+ " : " + ltln.longitude);
+                                    //Zoom the Marker
+                                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1,100));
+                                    //Add marker On Map
+                                    mMap.addMarker(markerOptions);
+                                    Circle circle = mMap.addCircle(new CircleOptions()
+                                            .center(ltln)
+                                            .radius(10)
+                                            .strokeColor(Color.RED)
+                                            .fillColor(Color.argb(50,0,0,255)));
+
+                                //Double lat = (Double) snapshot2.getValue();
+                                //Double lon = (Double) snapshot2.getValue();
+                                //Toast.makeText(MapsActivity.this, ""+ snapshot2.getRef(), Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MapsActivity.this, "Location : "+longitude + "  " + latitude, Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(MapsActivity.this, "Child of phone : "+lon, Toast.LENGTH_LONG).show();
+
+
+                            }
+
+                        }
+//                    }
+
+                    Toast.makeText(MapsActivity.this, "Phone Numbers:"+phoneN, Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 }

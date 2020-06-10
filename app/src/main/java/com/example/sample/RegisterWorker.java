@@ -114,7 +114,7 @@ public class RegisterWorker extends AppCompatActivity {
                     hashMap.put("email",email);
                     hashMap.put("pass",password);
 
-                    myRef.child("Users").child(phoneNumber).updateChildren(hashMap)
+                    myRef.child("Users").child(phoneNumber).child("WorkerInfo").updateChildren(hashMap)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {

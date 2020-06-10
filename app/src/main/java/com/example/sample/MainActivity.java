@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
-    TextView email,password;
+    TextView email,password,textView;
     Button login;
 
     @Override
@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         email = findViewById(R.id.email);
         password = findViewById(R.id.pass);
         login = findViewById(R.id.login);
+        textView = findViewById(R.id.textView);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -76,6 +77,14 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                 }
+            }
+        });
+
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(MainActivity.this,WorkerLogin.class);
+                startActivity(i);
             }
         });
     }

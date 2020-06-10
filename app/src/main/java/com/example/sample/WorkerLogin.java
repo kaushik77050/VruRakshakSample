@@ -77,7 +77,7 @@ public class WorkerLogin extends AppCompatActivity {
                     phone.requestFocus();
                 } else{
                     progressDialog = new ProgressDialog(WorkerLogin.this);
-                    progressDialog.setTitle("Creating Account");
+                    progressDialog.setTitle("Logging you in");
                     progressDialog.setMessage("Please wait, while we are checking the credentials.");
                     progressDialog.setCanceledOnTouchOutside(false);
                     progressDialog.show();
@@ -136,7 +136,7 @@ public class WorkerLogin extends AppCompatActivity {
                             }
                             else{
                                 progressDialog.dismiss();
-                                Intent intent = new Intent(WorkerLogin.this,WorkerActivity.class);
+                                Intent intent = new Intent(WorkerLogin.this,WorkerActivity1.class);
                                 startActivity(intent);
                             }
 

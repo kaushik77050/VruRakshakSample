@@ -1,7 +1,8 @@
 package com.example.sample;
 
 public class Locations {
-    private Double latitude,longitude;
+    private Double latitude;
+    private Double longitude;
 
     public Locations(){}
 

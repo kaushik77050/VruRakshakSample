@@ -208,7 +208,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         myRef = database.getReference("Users");
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        myRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot snapshot : dataSnapshot.getChildren()){
@@ -220,35 +220,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                             //LatLng ltln = new LatLng(latitude,longitude);
                             for(DataSnapshot snapshot2 : snapshot1.getChildren()){
+//                                    Locations location = snapshot2.getValue(Locations.class);
+//                                    Double lat = location.getLatitude();
+//                                    Double lon = location.getLongitude();
+//
 
-                                    Locations location = snapshot2.getValue(Locations.class);
-                                    Double lat = location.getLatitude();
-                                    Double lon = location.getLongitude();
 
-                                    LatLng ltln = new LatLng(lat,lon);
-                                    //LatLng ltln = locations1.getLl();
-                                    //Toast.makeText(MapsActivity.this, "Location"+ltln.longitude, Toast.LENGTH_SHORT).show();
-                                    //Creating Marker
-                                    MarkerOptions markerOptions = new MarkerOptions();
-                                    //Set Marker Position
-                                    markerOptions.position(ltln);
-                                    //Set Latitude And Longitude On Marker
-                                    markerOptions.title(ltln.latitude+ " : " + ltln.longitude);
-                                    //Zoom the Marker
-                                    //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1,100));
-                                    //Add marker On Map
-                                    mMap.addMarker(markerOptions);
-                                    Circle circle = mMap.addCircle(new CircleOptions()
-                                            .center(ltln)
-                                            .radius(10)
-                                            .strokeColor(Color.RED)
-                                            .fillColor(Color.argb(50,0,0,255)));
-
-                                //Double lat = (Double) snapshot2.getValue();
+                                Locations locations =  snapshot1.getValue(Locations.class);
+                                Double lat = locations.getLatitude();
+                                Double lon = locations.getLongitude();
                                 //Double lon = (Double) snapshot2.getValue();
                                 //Toast.makeText(MapsActivity.this, ""+ snapshot2.getRef(), Toast.LENGTH_SHORT).show();
-                                //Toast.makeText(MapsActivity.this, "Location : "+longitude + "  " + latitude, Toast.LENGTH_SHORT).show();
+                                //Toast.makeText(MapsActivity.this, "Location : "+lat + "  " + lon, Toast.LENGTH_SHORT).show();
 //                                Toast.makeText(MapsActivity.this, "Child of phone : "+lon, Toast.LENGTH_LONG).show();
+                                LatLng ltln = new LatLng(lat,lon);
+                                //LatLng ltln = locations1.getLl();
+                                //Toast.makeText(MapsActivity.this, "Location"+ltln.longitude, Toast.LENGTH_SHORT).show();
+                                //Creating Marker
+                                MarkerOptions markerOptions = new MarkerOptions();
+                                //Set Marker Position
+                                markerOptions.position(ltln);
+                                //Set Latitude And Longitude On Marker
+                                markerOptions.title(ltln.latitude+ " : " + ltln.longitude);
+                                //Zoom the Marker
+                                //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1,100));
+                                //Add marker On Map
+                                mMap.addMarker(markerOptions);
+                                Circle circle = mMap.addCircle(new CircleOptions()
+                                        .center(ltln)
+                                        .radius(10)
+                                        .strokeColor(Color.RED)
+                                        .fillColor(Color.argb(50,0,0,255)));
 
 
                             }

@@ -137,6 +137,9 @@ public class WorkerLogin extends AppCompatActivity {
                             else{
                                 progressDialog.dismiss();
                                 Intent intent = new Intent(WorkerLogin.this,WorkerActivity1.class);
+                                intent.putExtra("email",email1);
+                                intent.putExtra("password",pass);
+                                intent.putExtra("phoneNumber",phone);
                                 startActivity(intent);
                             }
 

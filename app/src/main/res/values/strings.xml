@@ -2,4 +2,9 @@
     <string name="app_name">sample</string>
     <string name="title_activity_maps">Map</string>
     <string name="title_activity_worker1">Map</string>
+
+    <string name="biometric_title">Login</string>
+    <string name="biometric_subtitle">Login to your Osta account</string>
+    <string name="biometric_description">Place your finger on the device home button to verify your identity</string>
+    <string name="biometric_negative_button_text">CANCEL</string>
 </resources>

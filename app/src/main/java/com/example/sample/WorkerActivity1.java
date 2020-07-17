@@ -41,12 +41,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.concurrent.Executor;
 
 public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
     private GoogleMap mMap;
-    Button lgout,showDustbins;
+    Button lgout, showDustbins;
     FloatingActionButton fingerprint;
     DatabaseReference myRef;
     Circle circle;
@@ -77,7 +81,7 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
         lgout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(WorkerActivity1.this,WorkerLogin.class);
+                Intent intent = new Intent(WorkerActivity1.this, WorkerLogin.class);
                 startActivity(intent);
             }
         });
@@ -150,13 +154,13 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
         myRef2.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot snapshot : dataSnapshot.getChildren()){
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Locations locations = snapshot.getValue(Locations.class);
                     Double lt = locations.getLatitude();
                     Double ln = locations.getLongitude();
                     //Toast.makeText(WorkerActivity1.this, "Location : "+lt + " " + ln, Toast.LENGTH_SHORT).show();
 
-                    LatLng ltln = new LatLng(lt,ln);
+                    LatLng ltln = new LatLng(lt, ln);
                     //LatLng ltln = locations1.getLl();
                     //Toast.makeText(WorkerActivity1.this, "Location"+ltln.longitude, Toast.LENGTH_SHORT).show();
                     //Creating Marker
@@ -164,19 +168,19 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
                     //Set Marker Position
                     markerOptions.position(ltln);
                     //Set Latitude And Longitude On Marker
-                    markerOptions.title(ltln.latitude+ " : " + ltln.longitude);
+                    markerOptions.title(ltln.latitude + " : " + ltln.longitude);
                     //Zoom the Marker
                     //mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng1,100));
                     //Add marker On Map
                     mMap.addMarker(markerOptions);
-                    if(count > 1){
+                    if (count > 1) {
                         circle.remove();
                     }
                     circle = mMap.addCircle(new CircleOptions()
                             .center(ltln)
                             .radius(10)
                             .strokeColor(Color.RED)
-                            .fillColor(Color.argb(50,0,0,255)));
+                            .fillColor(Color.argb(50, 0, 0, 255)));
                 }
             }
 
@@ -253,13 +257,10 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
     public void onMapReady(GoogleMap map) {
         mMap = map;
 
-        if(ContextCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-        {
+        if (ContextCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mMap.setMyLocationEnabled(true);
             CheckifWorkerisInsideCircle();
-        }
-        else
-        {
+        } else {
             enableMyLocation();
         }
         // mMap.setMyLocationEnabled(true);
@@ -267,26 +268,19 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
         mMap.setOnMyLocationClickListener(this);
 
 
-
     }
 
-    void sendTimeDateToAdmin()
-    {
-
-    }
-
-    private void CheckifWorkerisInsideCircle() {
-
+    void sendTimeDateToAdmin() {
         Bundle bundle = getIntent().getExtras();
         String ph = bundle.getString("phoneNumber");
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         myRef = database.getReference("Users");
         DatabaseReference myRef1 = myRef.child(ph);
-        DatabaseReference myRef2 = myRef1.child("Locations");
+        final DatabaseReference myRef2 = myRef1.child("Locations");
         myRef2.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
                     Locations locations = snapshot.getValue(Locations.class);
                     final Double lt = locations.getLatitude();
                     final Double ln = locations.getLongitude();
@@ -296,14 +290,24 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
                     locationRequest.setFastestInterval(3000);
                     locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+                    if (ActivityCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
                     LocationServices.getFusedLocationProviderClient(WorkerActivity1.this)
-                            .requestLocationUpdates(locationRequest,new LocationCallback(){
+                            .requestLocationUpdates(locationRequest, new LocationCallback() {
                                 @Override
                                 public void onLocationResult(LocationResult locationResult) {
                                     super.onLocationResult(locationResult);
                                     LocationServices.getFusedLocationProviderClient(WorkerActivity1.this)
                                             .removeLocationUpdates(this);
-                                    if(locationRequest != null && locationResult.getLocations().size() > 0){
+                                    if (locationRequest != null && locationResult.getLocations().size() > 0) {
                                         int latestLocationIndex = locationResult.getLocations().size() - 1;
                                         Double latitude =
                                                 locationResult.getLocations().get(latestLocationIndex).getLatitude();
@@ -311,12 +315,90 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
                                                 locationResult.getLocations().get(latestLocationIndex).getLongitude();
                                         //Toast.makeText(WorkerActivity1.this, "Location" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
                                         float[] distance = new float[2];
-                                        Location.distanceBetween(latitude,longitude,lt,ln,distance);
-                                        if( distance[0] > 10 ){
+                                        Location.distanceBetween(latitude, longitude, lt, ln, distance);
+                                        if (distance[0] > 10) {
                                             Toast.makeText(getBaseContext(), "Outside, distance from center: " + distance[0] + " radius: " + circle.getRadius(), Toast.LENGTH_LONG).show();
                                         } else {
-                                            Toast.makeText(getBaseContext(), "Inside, distance from center: " + distance[0] + " radius: " + circle.getRadius() , Toast.LENGTH_LONG).show();
+                                            Toast.makeText(getBaseContext(), "Inside, distance from center: " + distance[0] + " radius: " + circle.getRadius(), Toast.LENGTH_LONG).show();
                                             fingerprint.setVisibility(View.VISIBLE);
+                                            Toast.makeText(WorkerActivity1.this, "" + snapshot.getKey(), Toast.LENGTH_SHORT).show();
+                                            String currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date());
+                                            String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
+                                            HashMap<String,Object> hashMap = new HashMap<>();
+                                            hashMap.put("date",currentDate);
+                                            hashMap.put("time",currentTime);
+                                            myRef2.child(snapshot.getKey()).child("TimeAndDate").setValue(hashMap);
+
+                                        }
+                                    }
+                                }
+                            }, Looper.getMainLooper());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        Intent intent = new Intent(this,UploadPic.class);
+    }
+
+    private void CheckifWorkerisInsideCircle() {
+
+        Bundle bundle = getIntent().getExtras();
+        String ph = bundle.getString("phoneNumber");
+        final FirebaseDatabase database = FirebaseDatabase.getInstance();
+        myRef = database.getReference("Users");
+        DatabaseReference myRef1 = myRef.child(ph);
+        final DatabaseReference myRef2 = myRef1.child("Locations");
+        myRef2.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (final DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                    Locations locations = snapshot.getValue(Locations.class);
+                    final Double lt = locations.getLatitude();
+                    final Double ln = locations.getLongitude();
+
+                    final LocationRequest locationRequest = new LocationRequest();
+                    locationRequest.setInterval(10000);
+                    locationRequest.setFastestInterval(3000);
+                    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+                    if (ActivityCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(WorkerActivity1.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    LocationServices.getFusedLocationProviderClient(WorkerActivity1.this)
+                            .requestLocationUpdates(locationRequest, new LocationCallback() {
+                                @Override
+                                public void onLocationResult(LocationResult locationResult) {
+                                    super.onLocationResult(locationResult);
+                                    LocationServices.getFusedLocationProviderClient(WorkerActivity1.this)
+                                            .removeLocationUpdates(this);
+                                    if (locationRequest != null && locationResult.getLocations().size() > 0) {
+                                        int latestLocationIndex = locationResult.getLocations().size() - 1;
+                                        Double latitude =
+                                                locationResult.getLocations().get(latestLocationIndex).getLatitude();
+                                        Double longitude =
+                                                locationResult.getLocations().get(latestLocationIndex).getLongitude();
+                                        //Toast.makeText(WorkerActivity1.this, "Location" + latitude + " " + longitude, Toast.LENGTH_SHORT).show();
+                                        float[] distance = new float[2];
+                                        Location.distanceBetween(latitude, longitude, lt, ln, distance);
+                                        if (distance[0] > 10) {
+                                            Toast.makeText(getBaseContext(), "Outside, distance from center: " + distance[0] + " radius: " + circle.getRadius(), Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(getBaseContext(), "Inside, distance from center: " + distance[0] + " radius: " + circle.getRadius(), Toast.LENGTH_LONG).show();
+                                            fingerprint.setVisibility(View.VISIBLE);
+                                            //Toast.makeText(WorkerActivity1.this, ""+snapshot.getKey(), Toast.LENGTH_SHORT).show();
+
                                         }
                                     }
                                 }

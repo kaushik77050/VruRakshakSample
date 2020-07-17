@@ -1,10 +1,17 @@
 package com.example.sample;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +43,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener {
 
     private GoogleMap mMap;
     int flag = 0;
@@ -45,6 +52,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     //TODO:When Assign New Dustbin is clicked a list of workers should pop up
     Button showbtn, assignbtn;
     DatabaseReference myRef;
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
+    private boolean mPermissionDenied = false;
 
 
     @Override
@@ -83,6 +94,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
+
+        if (ContextCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        } else {
+            enableMyLocation();
+        }
+        // mMap.setMyLocationEnabled(true);
+        mMap.setOnMyLocationButtonClickListener(this);
+        mMap.setOnMyLocationClickListener(this);
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(final LatLng latLng) {
@@ -139,7 +159,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     //ading the phone number to list that will be displayed.
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(MapsActivity.this, R.layout.list_item, R.id.txtItem, items);
+                    ArrayAdapter<String> adapter = new ArrayAdapter <String>(MapsActivity.this, R.layout.list_item, R.id.txtItem, items);
                     listView.setAdapter(adapter);
                     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
@@ -162,6 +182,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                     HashMap<String, Object> hashMap = new HashMap<>();
                                     hashMap.put("latitude",latLng.latitude);
                                     hashMap.put("longitude",latLng.longitude);
+//                                    hashMap.put("time",0.0);
+//                                    hashMap.put("date",0.0);
 
                                     myRef.child(ph).child("Locations").child(child).updateChildren(hashMap)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -297,5 +319,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
+
+    private void enableMyLocation()
+    {
+        ActivityCompat.requestPermissions(MapsActivity.this,
+                new String[] {Manifest.permission.ACCESS_FINE_LOCATION},LOCATION_PERMISSION_REQUEST_CODE);
+    }
+
+    @Override
+    public void onMyLocationClick(@NonNull Location location) {
+        Toast.makeText(this, "Current location:\n" + location, Toast.LENGTH_LONG).show();
+
+    }
+
+    @Override
+    public boolean onMyLocationButtonClick() {
+        Toast.makeText(this, "My Location button clicked", Toast.LENGTH_SHORT).show();
+        // Return false so that we don't consume the event and the default behavior still occurs
+        // (the camera animates to the user's current position).
+        return false;
+    }
+
+    @SuppressLint("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+
+        if(requestCode == LOCATION_PERMISSION_REQUEST_CODE)
+        {
+            if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            {
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+
+                mMap.setMyLocationEnabled(true);
+
+            }
+            else
+            {
+                Toast.makeText(this, "Permission Not Granted", Toast.LENGTH_SHORT).show();
+                mPermissionDenied = true;
+            }
+        }
+
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (mPermissionDenied) {
+            // Permission was not granted, display error dialog.
+            showMissingPermissionError();
+            mPermissionDenied = false;
+        }
+    }
+
+    private void showMissingPermissionError() {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Permission Not Granted")
+                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).create().show();
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
     }
 }

@@ -119,6 +119,8 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
                         Toast.makeText(getApplicationContext(),
                                 "Authentication succeeded!", Toast.LENGTH_SHORT).show();
                         sendTimeDateToAdmin();
+                        //Toast.makeText(WorkerActivity1.this, "id : "+id, Toast.LENGTH_SHORT).show();
+
                     }
 
                     @Override
@@ -327,8 +329,11 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
                                             HashMap<String,Object> hashMap = new HashMap<>();
                                             hashMap.put("date",currentDate);
                                             hashMap.put("time",currentTime);
-                                            myRef2.child(snapshot.getKey()).child("TimeAndDate").setValue(hashMap);
 
+                                            myRef2.child(snapshot.getKey()).child("TimeAndDate").setValue(hashMap);
+                                            Intent intent = new Intent(WorkerActivity1.this,UploadPic.class);
+                                            intent.putExtra("id",snapshot.getKey());
+                                            startActivity(intent);
                                         }
                                     }
                                 }
@@ -342,7 +347,6 @@ public class WorkerActivity1 extends FragmentActivity implements OnMapReadyCallb
             }
         });
 
-        Intent intent = new Intent(this,UploadPic.class);
     }
 
     private void CheckifWorkerisInsideCircle() {

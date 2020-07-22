@@ -54,7 +54,8 @@ public class HomeActivity extends AppCompatActivity {
         monitorbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                    Intent intent = new Intent(HomeActivity.this,WorkerList.class);
+                    startActivity(intent);
             }
         });
     }

@@ -127,7 +127,7 @@ public class UploadPic extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         String id = bundle.getString("id");
         Toast.makeText(this, "id:" + id, Toast.LENGTH_SHORT).show();
-        StorageReference mountainsRef = storageReference.child(id+"jpg");
+        StorageReference mountainsRef = storageReference.child(id+".jpg");
         selectedImage.setDrawingCacheEnabled(true);
         selectedImage.buildDrawingCache();
         Bitmap bitmap = ((BitmapDrawable) selectedImage.getDrawable()).getBitmap();

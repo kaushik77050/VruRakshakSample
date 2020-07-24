@@ -1,22 +1,28 @@
 package com.example.sample;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
+
+//
 public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder>{
 
     Context context;
-    List<String> list;
+    ArrayList<String> list;
 
-    public Adapter(Context context, List<String> list) {
+    public Adapter(Context context, ArrayList<String> list) {
         this.context = context;
         this.list = list;
     }
@@ -29,8 +35,18 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder>{
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         holder.textView.setText(list.get(position));
+
+        holder.linearLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(context,list.get(position) , Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(context,LocationList.class);
+                intent.putExtra("phone",list.get(position));
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -38,13 +54,16 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder>{
         return list.size();
     }
 
+    //View Holder holds the individual list item in memory
     class MyViewHolder extends RecyclerView.ViewHolder{
 
         TextView textView;
+        LinearLayout linearLayout;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.tv);
+            linearLayout = itemView.findViewById(R.id.parent_layout);
         }
     }
 }
